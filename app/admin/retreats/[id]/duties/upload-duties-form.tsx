@@ -84,7 +84,8 @@ export function UploadDutiesForm({ retreatId }: UploadDutiesFormProps) {
         </h2>
         <p className="text-sm text-muted-foreground mb-4">
           Upload a CSV file with duties. The CSV should have a header row with
-          columns for &quot;title&quot; (required) and &quot;description&quot; (optional).
+          columns for &quot;title&quot; (required) and &quot;description&quot;
+          (optional).
         </p>
         <p className="text-xs text-muted-foreground mb-4">
           Example CSV format:
