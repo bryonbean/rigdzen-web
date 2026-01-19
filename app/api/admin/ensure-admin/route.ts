@@ -12,8 +12,8 @@ import { prisma } from "@/lib/prisma";
 
 // Validate and get admin user config
 const getAdminUser = () => {
-  const email = process.env.ADMIN_EMAIL;
-  const name = process.env.ADMIN_NAME;
+  const email = process.env.DEFAULT_ADMIN_EMAIL;
+  const name = process.env.DEFAULT_ADMIN_NAME;
 
   if (!email) {
     throw new Error("ADMIN_EMAIL environment variable is required");
