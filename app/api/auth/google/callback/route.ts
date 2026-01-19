@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 import { OAuth2Client } from "google-auth-library";
 import { prisma } from "@/lib/prisma";
 import { createSession } from "@/lib/auth/session";
+import { getBaseUrl } from "@/lib/utils/get-base-url";
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CALENDAR_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
-const REDIRECT_URI = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/auth/google/callback`;
 
 export async function GET(request: Request) {
+  const baseUrl = getBaseUrl(request);
+  const redirectUri = `${baseUrl}/api/auth/google/callback`;
+
   try {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get("code");
@@ -15,9 +18,7 @@ export async function GET(request: Request) {
 
     // Handle OAuth errors
     if (error || !code) {
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}?error=oauth_error`
-      );
+      return NextResponse.redirect(`${baseUrl}?error=oauth_error`);
     }
 
     if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
@@ -31,7 +32,7 @@ export async function GET(request: Request) {
     const oauth2Client = new OAuth2Client(
       GOOGLE_CLIENT_ID,
       GOOGLE_CLIENT_SECRET,
-      REDIRECT_URI
+      redirectUri
     );
 
     const { tokens } = await oauth2Client.getToken(code);
@@ -90,9 +91,7 @@ export async function GET(request: Request) {
       const redirectUrl = user.profileCompleted
         ? "/dashboard"
         : "/profile/complete";
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}${redirectUrl}`
-      );
+      return NextResponse.redirect(`${baseUrl}${redirectUrl}`);
     }
 
     if (user && !existingOAuthAccount) {
@@ -110,27 +109,21 @@ export async function GET(request: Request) {
       const redirectUrl = user.profileCompleted
         ? "/dashboard"
         : "/profile/complete";
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}${redirectUrl}`
-      );
+      return NextResponse.redirect(`${baseUrl}${redirectUrl}`);
     }
 
     if (!user) {
       // User not found in database - deny access
       return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}?error=user_not_found&email=${encodeURIComponent(email)}`
+        `${baseUrl}?error=user_not_found&email=${encodeURIComponent(email)}`
       );
     }
 
     // Fallback redirect (should not reach here)
     await createSession(user.id, user.email, user.role);
-    return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/dashboard`
-    );
+    return NextResponse.redirect(`${baseUrl}/dashboard`);
   } catch (error) {
     console.error("Google OAuth callback error:", error);
-    return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}?error=oauth_error`
-    );
+    return NextResponse.redirect(`${baseUrl}?error=oauth_error`);
   }
 }

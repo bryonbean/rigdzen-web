@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
+import { getBaseUrl } from "@/lib/utils/get-base-url";
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CALENDAR_CLIENT_ID;
-const REDIRECT_URI = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/auth/google/callback`;
 
-export async function GET() {
+export async function GET(request: Request) {
   if (!GOOGLE_CLIENT_ID) {
     return NextResponse.json(
       { error: "Google OAuth not configured" },
@@ -11,9 +11,12 @@ export async function GET() {
     );
   }
 
+  const baseUrl = getBaseUrl(request);
+  const redirectUri = `${baseUrl}/api/auth/google/callback`;
+
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,
-    redirect_uri: REDIRECT_URI,
+    redirect_uri: redirectUri,
     response_type: "code",
     scope: "openid email profile",
     access_type: "offline",
