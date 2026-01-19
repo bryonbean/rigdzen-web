@@ -53,3 +53,6 @@ prisma/migrations/.migration_lock.toml
 # Testing
 .nyc_output
 *.log
+
+# Locally ingored files
+.local

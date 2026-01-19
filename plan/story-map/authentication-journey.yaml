@@ -1,0 +1,424 @@
+id: clxxxx-authentication-journey
+name: "First-Time Authentication & Account Creation"
+description: "Users securely authenticate to access Rigdzen features using OAuth 2.0 (Google/Apple) or magic link fallback, with account linking and session management."
+createdAt: 2025-01-17T00:00:00Z
+updatedAt: 2025-01-17T00:00:00Z
+
+personas:
+  - id: clxxxx-first-time-user
+    name: "First-Time User"
+    description: "New sangha member accessing Rigdzen for the first time, may have varying technical literacy"
+
+  - id: clxxxx-returning-user
+    name: "Returning User"
+    description: "Existing user logging back in, may be using different device or after session expiration"
+
+  - id: clxxxx-admin-user
+    name: "Admin/Organizer"
+    description: "Retreat organizer or administrator using same authentication flow as regular users"
+
+steps:
+  - id: clxxxx-step-1
+    name: "Land on Login Page"
+    description: "User navigates to Rigdzen and sees the login page with logo and authentication options"
+    userStories:
+      - id: clxxxx-story-1-1
+        name: "Display Login Page"
+        description: "As a user, I want to see a clean login page with logo and OAuth options, so I can authenticate quickly"
+        painPoint:
+          id: clxxxx-painpoint-1
+          name: "Unclear authentication options"
+          description: "Users don't know how to authenticate or which method to use"
+          impact: 7
+          frequency: 10
+        priority: 70
+        functionalRequirements:
+          - "Login page displays Rigdzen logo prominently"
+          - "Page shows OAuth authentication options (Google, Apple) side-by-side or stacked"
+          - "Page includes 'Sign in with email' (magic link) fallback option"
+          - "Page is publicly accessible (no authentication required)"
+          - "Page has clean, minimal design suitable for diverse age groups"
+        status:
+          state: "backlog"
+          comment: ""
+
+      - id: clxxxx-story-1-2
+        name: "Access Magic Link Option"
+        description: "As a user without OAuth accounts, I want to use email magic link authentication, so I can still access Rigdzen"
+        painPoint:
+          id: clxxxx-painpoint-2
+          name: "No OAuth account available"
+          description: "Some users may not have Google or Apple accounts"
+          impact: 9
+          frequency: 2
+        priority: 18
+        functionalRequirements:
+          - "Magic link option is visible and clearly labeled"
+          - "Magic link flow is available as fallback for OAuth failures"
+        status:
+          state: "backlog"
+          comment: ""
+
+  - id: clxxxx-step-2
+    name: "Select Authentication Method"
+    description: "User chooses OAuth provider (Google/Apple) or magic link option"
+    userStories:
+      - id: clxxxx-story-2-1
+        name: "Choose OAuth Provider"
+        description: "As a user, I want to select my preferred OAuth provider, so I can authenticate with my existing account"
+        painPoint:
+          id: clxxxx-painpoint-3
+          name: "Multiple authentication options confusing"
+          description: "Users may be unsure which option to choose"
+          impact: 5
+          frequency: 8
+        priority: 40
+        functionalRequirements:
+          - "OAuth buttons clearly labeled ('Continue with Google', 'Continue with Apple')"
+          - "OAuth buttons are visually distinct and recognizable"
+          - "Buttons trigger OAuth flow when clicked"
+        status:
+          state: "backlog"
+          comment: ""
+
+      - id: clxxxx-story-2-2
+        name: "Select Magic Link"
+        description: "As a user, I want to choose email magic link authentication, so I can authenticate without OAuth"
+        painPoint:
+          id: clxxxx-painpoint-4
+          name: "No social media accounts"
+          description: "Users without OAuth accounts need alternative"
+          impact: 9
+          frequency: 2
+        priority: 18
+        functionalRequirements:
+          - "Magic link option is clearly visible"
+          - "Magic link option prompts for email address"
+        status:
+          state: "backlog"
+          comment: ""
+
+  - id: clxxxx-step-3
+    name: "OAuth Flow (Primary Path)"
+    description: "User authenticates via OAuth provider (Google or Apple)"
+    userStories:
+      - id: clxxxx-story-3-1
+        name: "Authenticate with Google OAuth"
+        description: "As a user, I want to authenticate with my Google account, so I can access Rigdzen quickly"
+        painPoint:
+          id: clxxxx-painpoint-5
+          name: "OAuth flow complexity"
+          description: "OAuth redirects and consent screens can be confusing"
+          impact: 6
+          frequency: 8
+        priority: 48
+        functionalRequirements:
+          - "Clicking 'Continue with Google' redirects to Google OAuth consent screen"
+          - "User grants permission on Google consent screen"
+          - "OAuth callback receives authorization code"
+          - "System exchanges code for access token and ID token"
+          - "System extracts user email and name from ID token"
+          - "User is redirected back to Rigdzen after successful authentication"
+        status:
+          state: "backlog"
+          comment: ""
+
+      - id: clxxxx-story-3-2
+        name: "Authenticate with Apple Sign-In"
+        description: "As a user, I want to authenticate with my Apple ID, so I can access Rigdzen with privacy-focused option"
+        painPoint:
+          id: clxxxx-painpoint-6
+          name: "Apple Sign-In privacy features"
+          description: "Apple's privacy features (hide email) may affect account linking"
+          impact: 7
+          frequency: 3
+        priority: 21
+        functionalRequirements:
+          - "Clicking 'Continue with Apple' redirects to Apple Sign-In"
+          - "User authenticates with Apple ID"
+          - "System handles Apple's email hiding feature (private relay emails)"
+          - "System links to existing account if email matches"
+        status:
+          state: "backlog"
+          comment: ""
+
+  - id: clxxxx-step-4
+    name: "Magic Link Flow (Fallback Path)"
+    description: "User authenticates via email magic link when OAuth is unavailable or preferred"
+    userStories:
+      - id: clxxxx-story-4-1
+        name: "Request Magic Link"
+        description: "As a user, I want to enter my email and receive a magic link, so I can authenticate without OAuth"
+        painPoint:
+          id: clxxxx-painpoint-7
+          name: "OAuth provider unavailable"
+          description: "Google or Apple OAuth services may be down"
+          impact: 9
+          frequency: 1
+        priority: 9
+        functionalRequirements:
+          - "User enters email address in magic link form"
+          - "System validates email format"
+          - "System generates secure, time-limited magic link token"
+          - "System sends email with magic link"
+          - "Email includes clear instructions and expiration time (15 minutes)"
+        status:
+          state: "backlog"
+          comment: ""
+
+      - id: clxxxx-story-4-2
+        name: "Click Magic Link"
+        description: "As a user, I want to click the magic link in my email, so I can authenticate without a password"
+        painPoint:
+          id: clxxxx-painpoint-8
+          name: "Magic link not received"
+          description: "Email delivery delays or spam filtering"
+          impact: 8
+          frequency: 2
+        priority: 16
+        functionalRequirements:
+          - "Magic link redirects to Rigdzen authentication endpoint"
+          - "System validates magic link token (checks expiration, single-use)"
+          - "System extracts email from validated token"
+          - "System authenticates user and creates session"
+          - "Used magic links are invalidated immediately"
+        status:
+          state: "backlog"
+          comment: ""
+
+  - id: clxxxx-step-5
+    name: "Account Creation/Linking"
+    description: "System creates new account or links OAuth to existing account based on email"
+    userStories:
+      - id: clxxxx-story-5-1
+        name: "Create New Account"
+        description: "As a first-time user, I want my account created automatically from OAuth data, so I can start using Rigdzen immediately"
+        painPoint:
+          id: clxxxx-painpoint-9
+          name: "Account creation friction"
+          description: "Traditional sign-up forms are time-consuming and error-prone"
+          impact: 8
+          frequency: 10
+        priority: 80
+        functionalRequirements:
+          - "System checks if account exists for OAuth email"
+          - "If no account exists, system creates new user record"
+          - "System stores OAuth provider ID (Google ID or Apple ID)"
+          - "System stores email from OAuth ID token"
+          - "System stores name from OAuth ID token (if provided)"
+          - "System assigns default user role (participant, not admin)"
+          - "Account creation is automatic and requires no additional input"
+        status:
+          state: "backlog"
+          comment: ""
+
+      - id: clxxxx-story-5-2
+        name: "Link Existing Account"
+        description: "As a returning user, I want my OAuth account linked to my existing Rigdzen account, so I can use different OAuth providers interchangeably"
+        painPoint:
+          id: clxxxx-painpoint-10
+          name: "Multiple accounts for same user"
+          description: "Users may have accounts from different OAuth providers with same email"
+          impact: 9
+          frequency: 3
+        priority: 27
+        functionalRequirements:
+          - "System checks if account exists with matching email"
+          - "If account exists, system links OAuth provider to existing account"
+          - "System stores multiple OAuth provider IDs per account"
+          - "User can authenticate with any linked OAuth provider"
+          - "Account linking happens automatically based on email match"
+        status:
+          state: "backlog"
+          comment: ""
+
+  - id: clxxxx-step-5-5
+    name: "Profile Completion (First-Time Users)"
+    description: "First-time users complete their profile with name confirmation and optional dietary restrictions"
+    userStories:
+      - id: clxxxx-story-5-5-1
+        name: "Confirm Name"
+        description: "As a first-time user, I want to confirm or edit my name pre-filled from OAuth, so my profile is accurate"
+        painPoint:
+          id: clxxxx-painpoint-17
+          name: "Incorrect name from OAuth"
+          description: "OAuth providers may have incorrect or outdated names"
+          impact: 6
+          frequency: 4
+        priority: 24
+        functionalRequirements:
+          - "Profile completion screen is shown only to first-time users after account creation"
+          - "Name field is pre-filled with value from OAuth ID token"
+          - "User can edit name before confirming"
+          - "Name field is required and validated (non-empty, reasonable length)"
+          - "System saves confirmed name to user profile"
+        status:
+          state: "backlog"
+          comment: ""
+
+      - id: clxxxx-story-5-5-2
+        name: "Add Dietary Restrictions"
+        description: "As a first-time user, I want to optionally add dietary restrictions, so meal ordering can accommodate my needs"
+        painPoint:
+          id: clxxxx-painpoint-18
+          name: "Dietary needs not communicated"
+          description: "Users need to communicate dietary restrictions for meal ordering"
+          impact: 8
+          frequency: 7
+        priority: 56
+        functionalRequirements:
+          - "Dietary restrictions field is optional on profile completion"
+          - "System provides common dietary restriction options (vegetarian, vegan, gluten-free, allergies, etc.)"
+          - "User can select multiple dietary restrictions"
+          - "User can add custom dietary notes/text"
+          - "System saves dietary restrictions to user profile"
+          - "Dietary restrictions are available for meal ordering flows"
+        status:
+          state: "backlog"
+          comment: ""
+
+      - id: clxxxx-story-5-5-3
+        name: "Skip Profile Completion"
+        description: "As a first-time user, I want to skip optional profile fields, so I can access Rigdzen quickly and complete profile later"
+        painPoint:
+          id: clxxxx-painpoint-19
+          name: "Forced profile completion"
+          description: "Users may want to explore app before providing all information"
+          impact: 7
+          frequency: 5
+        priority: 35
+        functionalRequirements:
+          - "Name confirmation is required (cannot skip)"
+          - "Dietary restrictions are optional (can skip)"
+          - "Skip option is clearly visible for optional fields"
+          - "User can complete profile later from account settings"
+          - "Profile completion can be deferred but name is required to proceed"
+        status:
+          state: "backlog"
+          comment: ""
+
+  - id: clxxxx-step-6
+    name: "Session Creation"
+    description: "System creates authenticated session with appropriate expiration"
+    userStories:
+      - id: clxxxx-story-6-1
+        name: "Create Authenticated Session"
+        description: "As a user, I want a secure session created after authentication, so I can access Rigdzen without re-authenticating frequently"
+        painPoint:
+          id: clxxxx-painpoint-11
+          name: "Frequent re-authentication"
+          description: "Users get frustrated having to log in repeatedly"
+          impact: 7
+          frequency: 8
+        priority: 56
+        functionalRequirements:
+          - "System creates secure session token (JWT or session cookie)"
+          - "Session includes user ID and role information"
+          - "Session expires after 7 days of inactivity"
+          - "Session is stored securely (httpOnly cookie or secure storage)"
+          - "System implements auto-refresh of tokens before expiration"
+        status:
+          state: "backlog"
+          comment: ""
+
+      - id: clxxxx-story-6-2
+        name: "Auto-Refresh Session"
+        description: "As a user, I want my session automatically refreshed, so I stay logged in while actively using the app"
+        painPoint:
+          id: clxxxx-painpoint-12
+          name: "Unexpected session expiration"
+          description: "Users lose work or context when session expires mid-use"
+          impact: 8
+          frequency: 5
+        priority: 40
+        functionalRequirements:
+          - "System automatically refreshes session tokens before expiration"
+          - "Refresh happens transparently to user (no re-authentication required)"
+          - "Refresh extends session expiration by 7 days from refresh time"
+          - "Refresh fails gracefully if OAuth tokens expired (requires re-auth)"
+        status:
+          state: "backlog"
+          comment: ""
+
+  - id: clxxxx-step-7
+    name: "Redirect to Dashboard"
+    description: "User is redirected to dashboard after successful authentication"
+    userStories:
+      - id: clxxxx-story-7-1
+        name: "Access Dashboard After Auth"
+        description: "As a user, I want to be taken directly to the dashboard after authentication, so I can start using Rigdzen immediately"
+        painPoint:
+          id: clxxxx-painpoint-13
+          name: "Post-authentication confusion"
+          description: "Users don't know where to go or what to do after logging in"
+          impact: 6
+          frequency: 8
+        priority: 48
+        functionalRequirements:
+          - "After successful authentication, user is redirected to dashboard"
+          - "Dashboard is accessible only to authenticated users"
+          - "Redirect happens automatically (no manual navigation required)"
+          - "Dashboard loads user-specific content (retreats, practice tracking, etc.)"
+        status:
+          state: "backlog"
+          comment: ""
+
+  - id: clxxxx-step-8
+    name: "Handle Edge Cases"
+    description: "System handles OAuth failures, account conflicts, and errors gracefully"
+    userStories:
+      - id: clxxxx-story-8-1
+        name: "Handle OAuth Provider Failure"
+        description: "As a user, I want to use magic link when OAuth fails, so I can still authenticate"
+        painPoint:
+          id: clxxxx-painpoint-14
+          name: "OAuth provider downtime"
+          description: "Google or Apple OAuth services may be unavailable"
+          impact: 9
+          frequency: 1
+        priority: 9
+        functionalRequirements:
+          - "System detects OAuth provider errors or timeouts"
+          - "System displays clear error message with magic link fallback option"
+          - "User can seamlessly switch to magic link authentication"
+          - "Error message is user-friendly (no technical jargon)"
+        status:
+          state: "backlog"
+          comment: ""
+
+      - id: clxxxx-story-8-2
+        name: "Handle Account Switch"
+        description: "As a user switching OAuth providers, I want a new account created, so I can use Rigdzen with different credentials"
+        painPoint:
+          id: clxxxx-painpoint-15
+          name: "Switching authentication methods"
+          description: "Users may want to use different OAuth provider for same account"
+          impact: 5
+          frequency: 2
+        priority: 10
+        functionalRequirements:
+          - "If user authenticates with different provider and email doesn't match existing account, create new account"
+          - "System treats as separate account (no automatic linking unless email matches)"
+          - "User can manually link accounts later if needed (future feature)"
+        status:
+          state: "backlog"
+          comment: ""
+
+      - id: clxxxx-story-8-3
+        name: "Handle Session Expiration"
+        description: "As a user, I want to be automatically logged out when session expires, so I know I need to re-authenticate"
+        painPoint:
+          id: clxxxx-painpoint-16
+          name: "Unclear session state"
+          description: "Users don't know if they're logged in or why they can't access features"
+          impact: 7
+          frequency: 6
+        priority: 42
+        functionalRequirements:
+          - "System detects expired session on protected route access"
+          - "System redirects to login page with clear message"
+          - "Error message indicates session expired (not authentication failure)"
+          - "User can re-authenticate using same OAuth flow"
+        status:
+          state: "backlog"
+          comment: ""

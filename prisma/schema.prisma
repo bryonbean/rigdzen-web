@@ -1,0 +1,203 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   Int                   @id @default(autoincrement())
+  email                String                @unique
+  name                 String?
+  role                 String                @default("PARTICIPANT") // PARTICIPANT or ADMIN
+  dietaryRestrictions  String? // JSON array of dietary restrictions
+  profileCompleted     Boolean               @default(false)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  oauthAccounts        OAuthAccount[]
+  mealOrders           MealOrder[]
+  dutyAssignments      DutyAssignment[]
+  payments             Payment[]
+  retreatRegistrations RetreatRegistration[]
+}
+
+model OAuthAccount {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  provider   String // GOOGLE or APPLE
+  providerId String // OAuth provider's unique user ID
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([provider, providerId])
+  @@index([userId])
+}
+
+model Retreat {
+  id                Int       @id @default(autoincrement())
+  name              String
+  description       String?
+  startDate         DateTime
+  endDate           DateTime
+  location          String?
+  mealOrderDeadline DateTime? // Deadline for meal ordering
+  status            String    @default("UPCOMING") // UPCOMING, IN_PROGRESS, COMPLETED, CANCELLED
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  meals         Meal[]
+  mealOrders    MealOrder[]
+  duties        Duty[]
+  registrations RetreatRegistration[]
+
+  @@index([startDate])
+  @@index([status])
+}
+
+model Meal {
+  id          Int      @id @default(autoincrement())
+  retreatId   Int
+  name        String // e.g., "Saturday Lunch", "Sunday Lunch"
+  description String?
+  mealDate    DateTime // Date and time of the meal
+  price       Float    @default(0.0) // Price in CAD
+  available   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  retreat    Retreat     @relation(fields: [retreatId], references: [id], onDelete: Cascade)
+  menuItems  MenuItem[]
+  mealOrders MealOrder[]
+
+  @@index([retreatId])
+  @@index([mealDate])
+}
+
+model MenuItem {
+  id               Int      @id @default(autoincrement())
+  mealId           Int
+  name             String // e.g., "tapas mixed meat", "tapas vegetarian"
+  description      String?
+  requiresQuantity Boolean  @default(false) // Whether this item needs a quantity (e.g., pizza slices)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  meal           Meal                @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  mealOrderItems MealOrderMenuItem[]
+
+  @@index([mealId])
+}
+
+model MealOrder {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  retreatId     Int
+  mealId        Int
+  status        String   @default("PENDING") // PENDING, PAID, CANCELLED
+  paymentMethod String?  // CASH, PAYPAL (null for pending orders)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  retreat   Retreat             @relation(fields: [retreatId], references: [id], onDelete: Cascade)
+  meal      Meal                @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  menuItems MealOrderMenuItem[]
+  payment   Payment?
+
+  @@unique([userId, mealId]) // User can only order one of each meal
+  @@index([userId])
+  @@index([retreatId])
+  @@index([status])
+  @@index([paymentMethod])
+}
+
+model MealOrderMenuItem {
+  id          Int      @id @default(autoincrement())
+  mealOrderId Int
+  menuItemId  Int
+  quantity    Int? // Quantity (null if not required by menu item)
+  createdAt   DateTime @default(now())
+
+  mealOrder MealOrder @relation(fields: [mealOrderId], references: [id], onDelete: Cascade)
+  menuItem  MenuItem  @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@unique([mealOrderId, menuItemId]) // Each menu item can only be selected once per order
+  @@index([mealOrderId])
+  @@index([menuItemId])
+}
+
+model Duty {
+  id          Int      @id @default(autoincrement())
+  retreatId   Int
+  title       String // e.g., "Shrine Setup", "Tea Service", "Clean-up"
+  description String?
+  status      String   @default("PENDING") // PENDING, ASSIGNED, COMPLETED (overall status)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  retreat     Retreat          @relation(fields: [retreatId], references: [id], onDelete: Cascade)
+  assignments DutyAssignment[]
+
+  @@index([retreatId])
+  @@index([status])
+}
+
+model DutyAssignment {
+  id          Int       @id @default(autoincrement())
+  dutyId      Int
+  userId      Int
+  assignedAt  DateTime  @default(now())
+  completedAt DateTime?
+  status      String    @default("ASSIGNED") // ASSIGNED, COMPLETED
+
+  duty Duty @relation(fields: [dutyId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([dutyId, userId]) // User can only be assigned once per duty
+  @@index([dutyId])
+  @@index([userId])
+  @@index([status])
+}
+
+model Payment {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  mealOrderId   Int?      @unique // Optional - for meal payments (one-to-one with MealOrder)
+  amount        Float // Amount in CAD
+  currency      String    @default("CAD")
+  paypalOrderId String? // PayPal order ID
+  paypalPayerId String? // PayPal payer ID
+  status        String    @default("PENDING") // PENDING, COMPLETED, FAILED, REFUNDED
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mealOrder MealOrder? @relation(fields: [mealOrderId], references: [id], onDelete: SetNull)
+
+  @@unique([paypalOrderId])
+  @@index([userId])
+  @@index([status])
+}
+
+model RetreatRegistration {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  retreatId    Int
+  status       String   @default("REGISTERED") // REGISTERED, CONFIRMED, CANCELLED
+  registeredAt DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  retreat Retreat @relation(fields: [retreatId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, retreatId]) // User can only register once per retreat
+  @@index([userId])
+  @@index([retreatId])
+}
