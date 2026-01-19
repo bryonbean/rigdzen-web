@@ -1,20 +1,32 @@
 /**
  * API route to ensure admin user exists
- * 
+ *
  * This can be called after deployment to ensure the admin user is created.
  * Safe to call multiple times (idempotent).
- * 
+ *
  * GET /api/admin/ensure-admin
  */
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-const ADMIN_USER = {
-  email: "bryonbean@gmail.com",
-  name: "Bryon Bean",
-  role: "ADMIN",
+// Validate and get admin user config
+const getAdminUser = () => {
+  const email = process.env.ADMIN_EMAIL;
+  const name = process.env.ADMIN_NAME;
+
+  if (!email) {
+    throw new Error("ADMIN_EMAIL environment variable is required");
+  }
+
+  return {
+    email,
+    name: name || "Admin", // Provide default if optional
+    role: "ADMIN",
+  };
 };
+
+const ADMIN_USER = getAdminUser();
 
 export async function GET() {
   try {

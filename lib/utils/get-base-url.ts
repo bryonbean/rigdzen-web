@@ -1,6 +1,6 @@
 /**
  * Get the base URL for the application
- * 
+ *
  * Priority:
  * 1. NEXT_PUBLIC_APP_URL (explicitly set - recommended for production)
  * 2. Request headers (for dynamic detection - works for custom domains)
@@ -18,12 +18,12 @@ export function getBaseUrl(request?: Request): string {
   if (request) {
     const url = new URL(request.url);
     const host = url.host;
-    
+
     // If it's the custom domain, use it
     if (host === "orgyenrigdzen.dev" || host.endsWith(".orgyenrigdzen.dev")) {
       return `${url.protocol}//${host}`;
     }
-    
+
     // For other cases, still use the request URL
     return `${url.protocol}//${host}`;
   }
