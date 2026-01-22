@@ -14,7 +14,7 @@ Rigdzen addresses the logistical challenges of coordinating multi-day retreats f
   - Zustand (client state)
   - TanStack Query (server state)
   - Redux-saga (complex side effects)
-- **Database:** Prisma ORM with SQLite (development)
+- **Database:** Prisma ORM with SQLite (development) / Turso (production)
 - **Testing:** Vitest + React Testing Library
 - **Code Quality:** ESLint + Prettier
 - **Git Hooks:** Husky with pre-commit hooks
@@ -65,9 +65,17 @@ Rigdzen addresses the logistical challenges of coordinating multi-day retreats f
 
 Copy `.env.example` to `.env` and configure the following variables:
 
-### Required
+### Required (Development)
 
-- `DATABASE_URL` - SQLite database path (e.g., `file:./dev.db`)
+- `DATABASE_URL` - SQLite database path (e.g., `file:./prisma/dev.db`)
+
+### Required (Production)
+
+- `TURSO_DATABASE_URL` - Turso database URL (e.g., `libsql://database-name.turso.io`)
+- `TURSO_AUTH_TOKEN` - Turso authentication token
+- `DEFAULT_ADMIN_EMAIL` - Admin user email
+- `DEFAULT_ADMIN_NAME` - Admin user name
+- `NEXTAUTH_SECRET` - Secure random string for JWT signing
 
 ### Optional (for integrations)
 
@@ -205,6 +213,52 @@ yarn test:ui
 # Coverage report
 yarn test:coverage
 ```
+
+## Deployment
+
+**Important:** SQLite does not work in serverless environments like Vercel. You must use Turso for production deployments.
+
+### Production Deployment to Vercel
+
+1. **Set up Turso database:**
+   ```bash
+   # Create database
+   turso db create rigdzen-production
+
+   # Get auth token
+   turso db tokens create rigdzen-production
+   ```
+
+2. **Configure Vercel environment variables:**
+   - Go to Vercel Dashboard → Project → Settings → Environment Variables
+   - Add required variables (see `.env.example` for complete list)
+   - Critical variables:
+     - `TURSO_DATABASE_URL` - Your Turso database URL
+     - `TURSO_AUTH_TOKEN` - Your Turso auth token
+     - `DEFAULT_ADMIN_EMAIL` - Admin user email
+     - `DEFAULT_ADMIN_NAME` - Admin user name
+     - `NEXTAUTH_SECRET` - Secure random string
+     - Other integration variables (PayPal, Google, etc.)
+
+3. **Deploy to Vercel:**
+   ```bash
+   # Using Vercel CLI
+   vercel --prod
+
+   # Or push to your git branch and Vercel will auto-deploy
+   ```
+
+4. **Run database migrations:**
+   ```bash
+   # Set Turso variables in your local environment temporarily
+   export TURSO_DATABASE_URL="your-turso-url"
+   export TURSO_AUTH_TOKEN="your-auth-token"
+
+   # Run migrations
+   npx prisma migrate deploy
+   ```
+
+For detailed Turso setup instructions, see `TURSO_SETUP.md`.
 
 ## Contributing
 

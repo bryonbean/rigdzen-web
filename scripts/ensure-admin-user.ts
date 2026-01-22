@@ -1,19 +1,63 @@
 /**
  * Deployment script to ensure admin user exists
- * 
- * This script ensures that the primary admin user (Bryon Bean) exists in the database.
+ *
+ * This script ensures that the admin user exists in the database.
  * It's safe to run multiple times (idempotent).
- * 
+ *
+ * Configuration via environment variables:
+ * - DEFAULT_ADMIN_EMAIL: Admin user email (required)
+ * - DEFAULT_ADMIN_NAME: Admin user name (required)
+ *
  * Run this as part of the deployment process to ensure admin access is always available.
  */
 
 import { PrismaClient } from "@prisma/client";
 
+/**
+ * Constructs the database connection URL based on environment variables.
+ * Same logic as lib/prisma.ts for consistency.
+ */
+function getDatabaseUrl(): string {
+  const tursoUrl = process.env.TURSO_DATABASE_URL;
+  const tursoToken = process.env.TURSO_AUTH_TOKEN;
+
+  // Production: Use Turso with auth token
+  if (tursoUrl && tursoToken) {
+    if (!tursoUrl.startsWith("libsql://")) {
+      throw new Error(
+        "TURSO_DATABASE_URL must start with 'libsql://'. " +
+          "Example: libsql://database-name.turso.io"
+      );
+    }
+
+    const url = new URL(tursoUrl);
+    url.searchParams.set("authToken", tursoToken);
+    return url.toString();
+  }
+
+  // Local development: Use DATABASE_URL (SQLite)
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    throw new Error(
+      "Database configuration missing. Set either:\n" +
+        "  - DATABASE_URL for local development (SQLite)\n" +
+        "  - TURSO_DATABASE_URL + TURSO_AUTH_TOKEN for production (Turso)"
+    );
+  }
+
+  return databaseUrl;
+}
+
+// Override DATABASE_URL for Prisma Client
+process.env.DATABASE_URL = getDatabaseUrl();
+
 const prisma = new PrismaClient();
 
+// Use environment variables for admin configuration
 const ADMIN_USER = {
-  email: "bryonbean@gmail.com",
-  name: "Bryon Bean",
+  email: process.env.DEFAULT_ADMIN_EMAIL || "bryonbean@gmail.com",
+  name: process.env.DEFAULT_ADMIN_NAME || "Bryon Bean",
   role: "ADMIN",
 };
 
