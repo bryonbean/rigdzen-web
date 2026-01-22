@@ -32,9 +32,9 @@ turso db create rigdzen-db
 turso db tokens create rigdzen-db
 ```
 
-### 3. Update Prisma Schema
+### 3. Prisma Configuration
 
-The schema needs to support both SQLite (local) and libSQL (Turso). Update `prisma/schema.prisma`:
+The Prisma schema uses the standard SQLite provider:
 
 ```prisma
 datasource db {
@@ -43,10 +43,9 @@ datasource db {
 }
 ```
 
-For Turso, your `DATABASE_URL` will look like:
-```
-libsql://rigdzen-db-orgyenrigdzen.turso.io?authToken=your-auth-token
-```
+**Important:** For Turso connections, the application uses Prisma's driver adapter pattern with `@prisma/adapter-libsql` and `@libsql/client` packages. This allows the schema to remain SQLite-compatible while connecting to Turso's libSQL in production.
+
+The connection logic automatically uses the appropriate method based on environment variables (see Step 4).
 
 ### 4. Environment Variables
 
@@ -104,6 +103,15 @@ DATABASE_URL="libsql://rigdzen-db-orgyenrigdzen.turso.io?authToken=your-local-to
 - ✅ Global replication
 - ✅ Free tier available
 - ✅ No schema changes needed
+- ✅ Uses Prisma driver adapters for seamless integration
+
+## Dependencies
+
+The following packages are required for Turso support:
+- `@libsql/client` - libSQL client library
+- `@prisma/adapter-libsql` - Prisma driver adapter for libSQL
+
+These are included in `package.json` and installed automatically with `npm install`.
 
 ## Alternative: Vercel Postgres
 

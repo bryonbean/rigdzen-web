@@ -1,21 +1,25 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaLibSQL } from "@prisma/adapter-libsql";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
 /**
- * Constructs the database connection URL based on environment variables.
+ * Creates a Prisma Client with appropriate database configuration.
  *
- * Priority:
- * 1. If TURSO_DATABASE_URL and TURSO_AUTH_TOKEN are set → Use Turso (production)
- * 2. Otherwise → Use DATABASE_URL (local SQLite)
+ * For Turso (production):
+ * - Uses libSQL driver adapter with TURSO_DATABASE_URL and TURSO_AUTH_TOKEN
+ * - Requires @libsql/client and @prisma/adapter-libsql packages
+ *
+ * For local SQLite (development):
+ * - Uses standard Prisma SQLite connection with DATABASE_URL
  */
-function getDatabaseUrl(): string {
+function createPrismaClient(): PrismaClient {
   const tursoUrl = process.env.TURSO_DATABASE_URL;
   const tursoToken = process.env.TURSO_AUTH_TOKEN;
 
-  // Production: Use Turso with auth token
+  // Production: Use Turso with libSQL driver adapter
   if (tursoUrl && tursoToken) {
     // Validate Turso URL format
     if (!tursoUrl.startsWith("libsql://")) {
@@ -25,12 +29,21 @@ function getDatabaseUrl(): string {
       );
     }
 
-    // Construct connection string with auth token
-    const url = new URL(tursoUrl);
-    url.searchParams.set("authToken", tursoToken);
+    console.log(`[Prisma] Using Turso database: ${new URL(tursoUrl).hostname}`);
 
-    console.log(`[Prisma] Using Turso database: ${url.hostname}`);
-    return url.toString();
+    const adapter = new PrismaLibSQL({
+      url: tursoUrl,
+      authToken: tursoToken,
+    });
+
+    // Return Prisma Client with libSQL adapter
+    return new PrismaClient({
+      adapter,
+      log:
+        process.env.NODE_ENV === "development"
+          ? ["query", "error", "warn"]
+          : ["error"],
+    });
   }
 
   // Local development: Use DATABASE_URL (SQLite)
@@ -45,20 +58,17 @@ function getDatabaseUrl(): string {
   }
 
   console.log(`[Prisma] Using local database: ${databaseUrl}`);
-  return databaseUrl;
-}
 
-// Override DATABASE_URL for Prisma Client
-process.env.DATABASE_URL = getDatabaseUrl();
-
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
+  // Return standard Prisma Client for SQLite
+  return new PrismaClient({
     log:
       process.env.NODE_ENV === "development"
         ? ["query", "error", "warn"]
         : ["error"],
   });
+}
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;

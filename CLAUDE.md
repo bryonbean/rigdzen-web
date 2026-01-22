@@ -64,9 +64,10 @@ npm run upsert:users     # Import users from CSV
 **Database Configuration:**
 - **Local:** `DATABASE_URL="file:./prisma/dev.db"` (SQLite)
 - **Production:** Use Turso with `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`
+- **Connection Method:** Uses Prisma driver adapters (`@prisma/adapter-libsql` + `@libsql/client`)
 - **Migration Pattern:** SQL migrations in `prisma/migrations/`
 
-**Important:** Turso is required for production/Vercel deployments. SQLite does not work in serverless environments. See `TURSO_SETUP.md` for setup instructions.
+**Important:** Turso is required for production/Vercel deployments. SQLite does not work in serverless environments. The application uses Prisma's libSQL driver adapter to connect to Turso while keeping the schema SQLite-compatible. See `TURSO_SETUP.md` for setup instructions.
 
 ### Authentication Flow
 

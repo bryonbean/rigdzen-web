@@ -28,7 +28,8 @@
   },
   "dependencies": {
     "@paypal/paypal-server-sdk": "^2.1.0",
-    "@prisma/client": "^5.20.0",
+    "@prisma/adapter-libsql": "^6.19.2",
+    "@prisma/client": "^6.19.2",
     "@tanstack/react-query": "^5.90.19",
     "autoprefixer": "^10.4.23",
     "class-variance-authority": "^0.7.1",
@@ -39,13 +40,13 @@
     "next": "^14.2.5",
     "papaparse": "^5.5.3",
     "postcss": "^8.5.6",
+    "prisma": "^6.19.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "redux": "^5.0.1",
     "redux-saga": "^1.4.2",
     "tailwind-merge": "^3.4.0",
-    "zustand": "^5.0.10",
-    "prisma": "^5.22.0"
+    "zustand": "^5.0.10"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",

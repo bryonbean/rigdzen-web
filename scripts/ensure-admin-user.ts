@@ -12,16 +12,17 @@
  */
 
 import { PrismaClient } from "@prisma/client";
+import { PrismaLibSQL } from "@prisma/adapter-libsql";
 
 /**
- * Constructs the database connection URL based on environment variables.
+ * Creates a Prisma Client with appropriate database configuration.
  * Same logic as lib/prisma.ts for consistency.
  */
-function getDatabaseUrl(): string {
+function createPrismaClient(): PrismaClient {
   const tursoUrl = process.env.TURSO_DATABASE_URL;
   const tursoToken = process.env.TURSO_AUTH_TOKEN;
 
-  // Production: Use Turso with auth token
+  // Production: Use Turso with libSQL driver adapter
   if (tursoUrl && tursoToken) {
     if (!tursoUrl.startsWith("libsql://")) {
       throw new Error(
@@ -30,9 +31,14 @@ function getDatabaseUrl(): string {
       );
     }
 
-    const url = new URL(tursoUrl);
-    url.searchParams.set("authToken", tursoToken);
-    return url.toString();
+    // Create Prisma adapter for libSQL (pass config directly)
+    const adapter = new PrismaLibSQL({
+      url: tursoUrl,
+      authToken: tursoToken,
+    });
+
+    // Return Prisma Client with libSQL adapter
+    return new PrismaClient({ adapter: adapter as never, log: ["query", "error", "warn"] });
   }
 
   // Local development: Use DATABASE_URL (SQLite)
@@ -46,13 +52,11 @@ function getDatabaseUrl(): string {
     );
   }
 
-  return databaseUrl;
+  // Return standard Prisma Client for SQLite
+  return new PrismaClient();
 }
 
-// Override DATABASE_URL for Prisma Client
-process.env.DATABASE_URL = getDatabaseUrl();
-
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 // Use environment variables for admin configuration
 const ADMIN_USER = {
