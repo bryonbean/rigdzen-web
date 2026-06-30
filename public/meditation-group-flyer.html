@@ -234,6 +234,23 @@
     margin-top:10px;
   }
 
+  .corner {
+    position: absolute;
+    width: 80px;  /* adjust to taste */
+    height: 80px;
+  }
+
+  .corner img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .corner.tl { top: 0.15in; left: 0.15in; transform: scale(0.5); tranform-origin: top left; }
+  .corner.tr { top: 0.15in; right: 0.15in; transform: scale(-0.5, 0.5);  }
+  .corner.bl { bottom: 0.15in; left: 0.15in; transform: scale(0.5,-0.5); }
+  .corner.br { bottom: 0.15in; right: 0.15in; transform: scale(-0.5, -0.5); }
+
   @media print{
     html,body{background:var(--cream);}
     .page{box-shadow:none; margin:0; width:8.5in; min-height:11in;}
@@ -253,10 +270,10 @@
 <div class="page">
   <div class="frame"></div>
 
-  <div class="corner tl"></div>
-  <div class="corner tr"></div>
-  <div class="corner bl"></div>
-  <div class="corner br"></div>
+  <div class="corner tl"><img src="corner-ornament.png" alt="" /></div>
+  <div class="corner tr"><img src="corner-ornament.png" alt="" /></div>
+  <div class="corner bl"><img src="corner-ornament.png" alt="" /></div>
+  <div class="corner br"><img src="corner-ornament.png" alt="" /></div>
 
   <div class="content">
 
