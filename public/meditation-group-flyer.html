@@ -171,6 +171,7 @@
     font-size:21px;
     color:var(--indigo-deep);
     font-weight:600;
+    white-space:pre-line;
   }
 
   .welcome-badge{
@@ -499,7 +500,9 @@
     const email = document.getElementById('in-email').value;
     const phone = document.getElementById('in-phone').value;
     const el = document.getElementById('f-contact');
-    if (el) el.innerHTML = email + '&nbsp; &middot; &nbsp;' + phone;
+    if (el) {
+      el.textContent = [email, phone].filter((v) => v.trim()).join('  ·  ');
+    }
   }
 
   function resetAll() {
